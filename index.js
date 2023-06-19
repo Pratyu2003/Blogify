@@ -40,12 +40,14 @@ io.on("connection", function (socket)
 
     socket.on("new_comment", function (comment)
     {
-        socket.broadcast.emit("new_comment", comment);
+        io.emit("new_comment", comment);
+        //socket.broadcast.emit("new_comment", comment);
     });
 
     socket.on("new_reply", function (reply)
     {
-        socket.broadcast.emit("new_reply", reply);
+        io.emit("new_reply", reply);
+        //socket.broadcast.emit("new_reply", reply);
     });
 });
 

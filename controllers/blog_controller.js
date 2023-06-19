@@ -8,22 +8,22 @@ const send_comment_mail = async (name, email, post_id) => {
 
         const transporter = nodemailer.createTransport(
             {
-                host: 'smtp-gmail.com',
-                port: 587,
-                secure: false,
-                requireTLS: true,
+                service: 'gmail',
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
                 auth: {
                     user: config.email_user,
-                    pass:config.email_password
+                    pass:config.app_password,
                 }
             }
         );
 
         const mail_options = {
-            from: 'BMS',
+            from: 'Blogify',
             to: email,
             subject: 'New Reply',
-            html: '<p>'+name+', has replied to your comment <a href = "http://localhost:3000/post/'+ post_id+'"> Read your replies </a></p>'
+            html: '<p>'+name+', has replied to your comment <a href = "http://localhost:3000/post/'+ post_id+'"> Show comment </a></p>'
         }
 
         transporter.sendMail(mail_options, function (error, info) {
@@ -31,7 +31,7 @@ const send_comment_mail = async (name, email, post_id) => {
                 console.log(error);
             }
             else {
-                console.log("Email has been sent:-", info.response);
+                console.log("Email has been sent: ", info.response);
             }
         });
 
