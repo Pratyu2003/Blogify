@@ -1,0 +1,89 @@
+<%- include('../layouts/admin_header.ejs') %>
+
+        <!-- Page Content  -->
+        <div id="content" class="p-4 p-md-5 pt-5">
+            <h2 class="mb-4">Dashboard</h2>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Content</th>
+                        <th>Image</th>
+                        <th>Delete</th>
+                        <th>Edit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <%
+
+                    if (posts.length > 0) 
+                    {
+                        var i = 1;
+                        posts.forEach(function(post) 
+                        {
+                            %>
+                            <tr>
+                                <td> <%= i++; %> </td>
+                                <td> <%= post.title %> </td>
+                                <td> <%= post.content %> </td>
+                                <td> 
+                                    <img src="<%= post.image %>" alt="<%= post.image %>" width = "100px">
+                                </td>
+                                <td>
+                                    <a href="#" class="btn btn-danger delete_post" data-id = "<%= post._id %>">Delete</a>
+                                </td>
+                                <td>
+                                    <a href="/edit-post/<%= post._id %>" class="btn btn-warning edit-post">Edit</a>
+                                </td>
+                            </tr>
+                            <%
+                        });
+                    }
+                    else 
+                    {
+                        %>
+                        <tr>
+                            <td colspan="4">
+                                No Posts Found!
+                            </td>
+                        </tr>
+                        <%
+                    }
+                    %>
+                </tbody>
+            </table>
+        </div>
+
+        <script>
+            $(document).ready(function()
+            {
+                $('.delete_post').click(function(event)
+                {
+                    var post_id = $(this).attr('data-id');
+                    var obj = $(this);
+
+                    $.ajax(
+                        {
+                            url : "/delete-post",
+                            type : "POST",
+                            data : {id : post_id},
+                            success : function(response) {
+                                if (response.success == true) 
+                                {
+                                    $(obj).parent().parent().remove();
+                                    alert(response.message);
+                                }
+                                else 
+                                {
+                                    alert(response.message);
+                                }
+                            }
+                        }
+                    );
+                });
+            });
+        </script>
+
+        <%- include('../layouts/admin_footer.ejs') %>

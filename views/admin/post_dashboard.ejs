@@ -1,0 +1,149 @@
+<%- include('../layouts/admin_header.ejs') %>
+
+        <!-- Page Content  -->
+        <div id="content" class="p-4 p-md-5 pt-5">
+            <h2 class="mb-4">Add Post</h2>
+
+            <form method="POST" id = "add_post">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h5>Title</h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <input type="text" name = "title" required placeholder="Enter Post Title" class = "w-100">
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-sm-12">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadmodal">
+                            Upload Image
+                          </button>
+                          <input type="hidden" name = "image" id ="image">
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-sm-12">
+                        <h5>Content</h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <textarea name = "content" rows = "5" placeholder = "Enter Post Content" required class = "w-100">
+                        </textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <input type="submit" value="Add Post" class = "btn btn-primary">
+                    </div>
+                </div>
+            </form>
+
+            <%
+            if (typeof message !== 'undefined') {
+                %>
+                <p style="color : green;"><%= message %></p>
+                <%
+            }
+            %>
+
+        </div>
+
+             <!-- Modal -->
+<div class="modal fade" id="uploadmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLongTitle">Upload</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id = "uploadform">
+        <div class="modal-body">
+            <input type="file" name="image" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(document).ready(function()
+    {
+        $('#uploadform').submit(function(event) 
+        {
+            event.preventDefault();
+
+            $.ajax(
+                {
+                    url : "/upload-post-image",
+                    type : "POST",
+                    data : new FormData(this),
+                    contentType : false,
+                    cache : false,
+                    processData : false,
+                    success : function(data) {
+                        if (data.success == true) 
+                        {
+                            $('#image').val(data.path);
+                            alert(data.message);
+                            $('$uploadmodal').modal('hide');
+                        }
+                        else 
+                        {
+                            alert(data.message);
+                        }
+                    }
+                });
+        });
+
+        $('#add_post').submit(function(event) 
+        {   
+            //form submission rokne ke liye
+            event.preventDefault();
+
+            var obj = $(this);
+
+            var form_data = {};
+
+            $.each($(this).serializeArray(), function(i, field)
+            {
+                form_data[field.name] = field.value;
+            });
+
+
+            $.ajax(
+                {
+                    url : "/create-post",
+                    type : "POST",
+                    data : form_data,
+                    success : function(data) {
+                        if (data.success == true) 
+                        {
+                            alert(data.message);
+                            $(obj)[0].reset();
+                            $('#image').val('');
+                            form_data._id = data._id;
+                            //socket ko bata de ye meri nayi post hai ye mera data isko aap lo aur emit kardo
+                            var socket = io();
+                            socket.emit("new_post", form_data);
+                        }
+                        else 
+                        {
+                            alert(data.message);
+                        }
+                    }
+                });
+        });
+
+    });
+  </script>
+
+        <%- include('../layouts/admin_footer.ejs') %>

@@ -1,0 +1,68 @@
+<%- include('../layouts/admin_header.ejs') %>
+
+        <!-- Page Content  -->
+        <div id="content" class="p-4 p-md-5 pt-5">
+        <h2 class="mb-4">Update Post</h2>
+        <div class = "container">
+            <form method="POST" id = "edit-post">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h5>Title</h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <input type="hidden" name = "id" value = "<%= post._id %>">
+                        <input type="text" name = "title" value="<%= post.title %>" placeholder="Enter Post Title" class = "w-100">
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-sm-12">
+                        <h5>Content</h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <textarea name = "content" rows = "5" placeholder = "Enter Post Content" required class = "w-100">
+                            "<%= post.content %>"
+                        </textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <input type="submit" value="Update Post" class = "btn btn-warning">
+                    </div>
+                </div>
+            </form>
+            </div>
+            <p style="color : green;" class="status"></p>
+        </div>
+
+  <script>
+    $(document).ready(function()
+    {
+        $('#edit-post').submit(function(event) 
+        {   
+            event.preventDefault();
+            var form_data = {};
+            $.each($(this).serializeArray(), function(i, field)
+            {
+                form_data[field.name] = field.value;
+            });
+
+            $.ajax(
+                {
+                    url : "/update-post",
+                    type : "POST",
+                    data : form_data,
+                    success : function(data) {
+                        console.log(data.message);
+                        $('.status').text(data.message);
+                    }
+                });
+        });
+    });
+
+  </script>
+
+<%- include('../layouts/admin_footer.ejs') %>

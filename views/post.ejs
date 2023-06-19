@@ -1,0 +1,237 @@
+<%- include('./layouts/header.ejs')%>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Post content-->
+            <article>
+                <!-- Post header-->
+                <header class="mb-4">
+                    <!-- Post title-->
+                    <h1 class="fw-bolder mb-1"><%= post.title %></h1>
+                    <!-- Post meta content-->
+                    <div class="text-muted fst-italic mb-2">Posted by Admin</div>
+                    <!-- Post categories-->
+                    <!-- <a class="badge bg-secondary text-decoration-none link-light" href="#!">Web Design</a> -->
+                    <!-- <a class="badge bg-secondary text-decoration-none link-light" href="#!">Freebies</a> -->
+                </header>
+                <!-- Preview image figure-->
+                <figure class="mb-4">
+                    <%
+                    if (post.image !== undefined && post.image !== '') 
+                    {
+                        %>
+                        <img class="img-fluid rounded mb-4 mb-lg-0" src="<%= post.image %>" alt="..." />
+                        <%
+                    }
+                    else 
+                    {
+                        %>
+                        <img class="img-fluid rounded mb-4 mb-lg-0" src="https://dummyimage.com/900x400/ced4da/6c757d.jpg" alt="..." />
+                        <%
+                    }
+                    %>
+                </figure>
+                <!-- Post content-->
+                <section class="mb-5">
+                    <p class="fs-5 mb-4"><%= post.content %></p>
+                </section>
+            </article>
+            <!-- Comments section-->
+            <section class="mb-5">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <!-- Comment form-->
+                        <h5>Leave a comment</h5>
+                        <form class="mb-4" id = "comment-form">
+                            <input type="hidden" name = "post_id" value="<%= post._id %>">
+                            <input type="text" name = "username" placeholder="Enter your name" required class = "form form-control mb-3">
+                            <input type="email" name = "email" placeholder="Enter your Email" required class = "form form-control mb-3">
+                            <textarea class="form-control" name = "comment" required rows="3" placeholder="Join the discussion and leave a comment!"></textarea>
+                            <input type="submit" class = "btn btn-primary mt-3">
+                        
+                        </form>
+
+                        <p class = "com-status" style="color:green;"></p>
+
+                        <!-- Comment with nested comments-->
+
+                        <div id="comment-section">
+
+                        <% 
+
+                        if (post.comments.length > 0) {
+                        post.comments.reverse();
+                        post.comments.forEach(function(comment) {
+                            %>
+
+                            <div class="d-flex mt-4">
+                                <div class="flex-shrink-0"><img class="rounded-circle" src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="..." /></div>
+                                <div class="ms-3">
+                                    <div class="fw-bold"><%= comment.username %></div>
+                                    <%= comment.comment %>
+                                    <div id="replies-<%= comment._id %>">
+                                    <%
+                                    if (comment.replies) 
+                                    {
+                                        comment.replies.forEach(function(reply)
+                                        {
+                                            %>
+                                            <div class="d-flex mt-3">
+                                            <div class="flex-shrink-0"><img class="rounded-circle" src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="..." /></div>
+                                            <div class="ms-3">
+                                            <div class="fw-bold"><%= reply.name %></div>
+                                            <%= reply.reply %>
+                                            </div>
+                                            </div>
+                                            <%
+                                        });
+                                    }
+                                    %>
+                                    </div>
+
+                                    <div class = "col-md-12">
+                                        <form class = "do-reply">
+                                            <input type="hidden" name="post_id" value = "<%= post._id %>">
+                                            <input type="hidden" name="comment_id" value = "<%= comment._id %>">
+                                            <input type="hidden" name="comment_email" value = "<%= comment.email %>">
+                                            <div class= = "form-group">
+                                                <input type="text" class="form-control" name = "name" placeholder="Enter Name" required>
+                                            </div>
+                                            <div class= = "form-group">
+                                                <textarea class="form-control" name = "reply" placeholder="Enter Reply" required></textarea>
+                                            </div>
+                                            <input type="submit" value="Reply" class="btn btn-info btn-sm">
+                                        </form>
+                                    </div>
+
+                                </div>
+                            </div>
+    
+                            <%
+                        });
+                        }
+                        %>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- Side widgets-->
+        <div class="col-lg-4">
+            <!-- Search widget-->
+            <div class="card mb-4">
+                <div class="card-header">Search</div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <input class="form-control" type="text" placeholder="Enter search term..." aria-label="Enter search term..." aria-describedby="button-search" />
+                        <button class="btn btn-primary" id="button-search" type="button">Go!</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    var socket = io();
+
+    $(document).ready(function() {
+        $('#comment-form').submit(function(event){
+            event.preventDefault();
+
+            // var form_data = $(this).serialize();
+
+            var form_data = {};
+
+            $.each($(this).serializeArray(), function(i, field)
+            {
+                form_data[field.name] = field.value;
+            });
+
+
+            $.ajax({
+                url:"/add-comment",
+                type:"POST",
+                data: form_data,
+                success:function(data) {
+                    
+                    form_data._id = data._id;
+
+                    socket.emit("new_comment", form_data);
+
+                    $('.com-status').text(data.message);
+                    setTimeout(function(){
+                        $('.com-status').text('');
+                    }, 5000);
+                }
+            });
+        });
+
+        //realtime comment show.
+
+        socket.on("new_comment", function(comment)
+        {
+            var html = '';
+
+            html += `
+            <div class="d-flex mt-4">
+                <div class="flex-shrink-0"><img class="rounded-circle" src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="..." /></div>
+                <div class="ms-3">
+                <div class="fw-bold">`+comment.username+`</div>
+                `+comment.comment+`
+                </div>
+            </div>
+            `;
+            $('#comment-section').prepend(html);
+        });
+
+        $('.do-reply').submit(function(event)
+        {
+            event.preventDefault();
+
+            var form_data = {};
+
+            $.each($(this).serializeArray(), function(i, field)
+            {
+                form_data[field.name] = field.value;
+            });
+
+            var obj = $(this);
+
+            $.ajax(
+                {
+                    url:"/do-reply",
+                    type:"POST",
+                    data: form_data,
+                    success:function(data) 
+                    {
+                        form_data._id = data._id;
+                        socket.emit("new_reply", form_data);
+                        $(obj)[0].reset();
+                        $(obj).parent().parent().append('<p>'+data.message+'</p>');
+                    }
+                });
+            }); 
+
+            socket.on("new_reply", function(reply)
+            {
+                var html = "";
+                html += `
+                <div class="d-flex mt-3">
+                    <div class="flex-shrink-0"><img class="rounded-circle" src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="..." /></div>
+                    <div class="ms-3">
+                    <div class="fw-bold">`+reply.name+`</div>
+                    `+reply.reply+`
+                    </div>
+                </div>
+                `;
+
+                $('#replies-' + reply.comment_id).append(html);
+            });
+
+    });
+</script>
+
+<%- include('./layouts/footer.ejs')%>
