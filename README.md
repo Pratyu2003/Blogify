@@ -1,12 +1,13 @@
 # Description:
 
 Blogify is a full-stack web application with user authentication, including blog setup, login, logout, and password reset. 
-Registered users can create and set up their own blogs and view all their content on the admin dashboard. 
+Registered users can create and set up their own blogs and view all their content on the admin dashboard and can also change Pagination(number of posts per page) settings. 
 Readers can comment on posts and reply to comments. 
 Readers will receive email notifications for replies to their comments via gmail. 
 The web application enables users to perform CRUD operations on their blog content. 
 It is implemented using the Model-View-Controller (MVC) architecture to separate concerns. 
 The application utilizes the Socket.IO library to facilitate real-time updates on posts and comments.
+
 
 # How to Setup:
 
