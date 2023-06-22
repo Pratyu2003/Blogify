@@ -13,12 +13,12 @@ const send_resetpassword_mail = async (name, email, token) => {
     try {
         const transport = nodemailer.createTransport({
             host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,
-            requireTLS: true,
+            port: 465,
+            secure: true,
+            
             auth: {
                 user: config.email_user,
-                pass: config.email_password
+                pass: config.app_password
             }
         });
 

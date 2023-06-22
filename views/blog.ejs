@@ -1,77 +1,159 @@
 <%- include('./layouts/header.ejs') %>
 
-        <!-- Page Content-->
-        <div class="container px-4 px-lg-5 posts">
-            <!-- Heading Row-->
+<!-- Page Content-->
+<div class="container px-4 px-lg-5 posts">
+    
 
-            <%
+    <%
             if (posts.length > 0) {
-                for (let i = posts.length - 1; i >= 0; --i) 
+                for (let i = 0; i <= posts.length - 1; i++) 
                 {
                     %>
-                    <div class="row gx-4 gx-lg-5 align-items-center my-5">
-                        <div class="col-lg-7">
-                            <%
+    <div class="row gx-4 gx-lg-5 align-items-center my-5" id="post-<%= posts[i]._id %>">
+        <div class="col-lg-7">
+            <%
                             if (posts[i].image !== undefined && posts[i].image !== '') 
                             {
                                 %>
-                                <img class="img-fluid rounded mb-4 mb-lg-0" src="<%= posts[i].image %>" alt="..." />
-                                <%
+            <img class="img-fluid rounded mb-4 mb-lg-0" src="<%= posts[i].image %>" alt="..." />
+            <%
                             }
                             else 
                             {
                                 %>
-                                <img class="img-fluid rounded mb-4 mb-lg-0" src="https://dummyimage.com/900x400/dee2e6/6c757d.jpg" alt="..." />
-                                <%
+            <img class="img-fluid rounded mb-4 mb-lg-0" src="https://dummyimage.com/900x400/dee2e6/6c757d.jpg"
+                alt="..." />
+            <%
                             }
                             %>
-                        </div>
-                        <div class="col-lg-5">
-                            <h1 class="font-weight-light"><%= posts[i].title %></h1>
-                            <p> <%= posts[i].content %> </p>
-                            <a class="btn btn-primary" href="/post/<%= posts[i]._id%>">Read More</a>
-                        </div>
-                    </div>
-                    <%
+        </div>
+        <div class="col-lg-5">
+            <h1 class="font-weight-light"><%= posts[i].title %></h1>
+            <p> <%- posts[i].content %> </p>
+            <a class="btn btn-primary" href="/post/<%= posts[i]._id%>">Read More</a>
+        </div>
+    </div>
+    <%
                 }
             }
             else {
                 %>
-                <h1>Posts are not available</h1>
-                <%
+    <h1>Posts are not available</h1>
+    <%
             }
             %>
 
+</div>
 
-        </div>
 
-        <script>
-            var socket = io();
-            socket.on("new_post", function(form_data)
-            {
-                var html = "";
-                var image = "https://dummyimage.com/900x400/dee2e6/6c757d.jpg";
-                if (form_data.image != '')
-                {
-                    image = form_data.image;
+<div class="container mb-3">
+    <div class="text-center">
+        <button class="btn btn-primary" onclick="getPrevious()">Previous</button>
+        <button class="btn btn-primary" onclick="getNext()">Next</button>
+    </div>
+</div>
+
+
+<script>
+    var start = 0;
+     var limit = <%= postLimit %>;
+
+    //For getting Next Page blogs
+    function getNext() {
+        start = start + limit;
+
+        $.ajax({
+            url: "/get-posts/" + start + "/" + limit,
+            type: "GET",
+            success: function (response) {
+                renderPost(response);
+            }
+        });
+    }
+
+    //For getting Previous Page blogs
+    function getPrevious() {
+        start = start - limit;
+
+        $.ajax({
+            url: "/get-posts/" + start + "/" + limit,
+            type: "GET",
+            success: function (response) {
+                renderPost(response);
+            }
+        });
+    }
+
+    function renderPost(posts) {
+
+        if (posts.length > 0) {
+
+            var html = '';
+
+            for (let i = 0; i <= posts.length - 1; i++) {
+
+                var image= '';
+
+                if (posts[i].image !== undefined && posts[i].image !== '') {
+
+                 image = `<img class = "img-fluid rounded mb-4 mb-lg-0" src = "`+posts[i].image+`"alt = "..." / >`;
+
+                } else {
+
+                 image = `<img class = "img-fluid rounded mb-4 mb-lg-0" src = "https://dummyimage.com/900x400/dee2e6/6c757d.jpg" alt = "..." / >`;
+
                 }
+
+
                 html += `
-                <div class="row gx-4 gx-lg-5 align-items-center my-5">
+                        
+                        <div class="row gx-4 gx-lg-5 align-items-center my-5" id="post-` + posts[i]._id + `">
                         <div class="col-lg-7">
-                                <img class="img-fluid rounded mb-4 mb-lg-0" src="`+image+`" alt="..." />
+                            `+image+`
                         </div>
                         <div class="col-lg-5">
-                            <h1 class="font-weight-light">`+form_data.title+`</h1>
-                            <p> `+form_data.content+` </p>
-                            <a class="btn btn-primary" href="/post/`+form_data._id+`">Read More</a>
+                            <h1 class="font-weight-light">` + posts[i].title + `</h1>
+                            <p> ` + posts[i].content + `</p>
+                            <a class="btn btn-primary" href="/post/` + posts[i]._id + `">Read More</a>
+                        </div>
+                    </div>
+
+                        `;
+
+            }
+
+
+            $('.posts').html(html);
+        }
+    }
+
+
+
+
+    var socket = io();
+    socket.on("new_post", function (form_data) {
+        var html = "";
+        var image = "https://dummyimage.com/900x400/dee2e6/6c757d.jpg";
+        if (form_data.image != '') {
+            image = form_data.image;
+        }
+        html += `
+                <div class="row gx-4 gx-lg-5 align-items-center my-5">
+                        <div class="col-lg-7">
+                                <img class="img-fluid rounded mb-4 mb-lg-0" src="` + image + `" alt="..." />
+                        </div>
+                        <div class="col-lg-5">
+                            <h1 class="font-weight-light">` + form_data.title + `</h1>
+                            <p> ` + form_data.content + ` </p>
+                            <a class="btn btn-primary" href="/post/` + form_data._id + `">Read More</a>
                         </div>
                     </div>
                 `;
 
-                $('.posts').prepend(html);
+        $('.posts').prepend(html);
 
-            });
-        </script>
+    });
+</script>
 
 
 <%- include('./layouts/footer.ejs') %>

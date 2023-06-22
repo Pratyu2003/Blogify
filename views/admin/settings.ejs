@@ -1,0 +1,32 @@
+<%- include('../layouts/admin_header.ejs') %>
+
+<div id="content" class="p-4 p-md-5 pt-5">
+    <h2 class="mb-4">Settings</h2>
+
+    <form id="settings-form">
+        <input type="text" name="limit" placeholder="Post Limit" value="<%= limit %>" required class="mb-3 w-100">
+        <input type="submit" value="Save Settings" class="btn btn-info">
+    </form>
+    <p class="result" style="color: green"></p>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#settings-form').submit(function (event) {
+            event.preventDefault();
+
+            var formData = $(this).serialize();
+
+            $.ajax({
+                url: '/settings',
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    $('.result').text(response.msg);
+                }
+            });
+        });
+    });
+</script>
+
+<%- include('../layouts/admin_footer.ejs') %>

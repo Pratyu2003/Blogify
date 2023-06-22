@@ -1,6 +1,7 @@
 const blog_setting = require('../models/blog_setting_model');
 const User = require('../models/user_model');
 const Post = require('../models/post_model');
+const Setting = require('../models/setting_model');
 const bcrypt = require('bcrypt');
 
 
@@ -66,7 +67,7 @@ const blog_setup_save = async (req, res) => {
 
 const dashboard = async (req, res) => {
     try {
-        const all_posts = await Post.find({});
+        const all_posts = await Post.find({}).sort({_id: -1});
         res.render('admin/dashboard', { posts: all_posts });
     } catch (error) {
         console.log(error.message);
@@ -179,6 +180,38 @@ const contact = async (req, res) => {
     }
 }
 
+const load_Settings = async (req, res) => {
+    try {
+        
+        var setting = await Setting.findOne({});
+        var postLimit = 0;
+        if(setting!=null){
+            postLimit = setting.post_limit;
+        }
+
+        res.render('admin/settings', {limit: postLimit});
+
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+const save_Settings = async (req, res) => {
+    try {
+        
+       await Setting.updateOne({}, {
+        post_limit: req.body.limit,
+       upsert: true});
+
+       res.status(200).send({ success: true, message: 'Settings Updated' });
+
+    } catch (error) {
+        res.status(400).send({ success: false, message: 'Settings Updated' });
+    }
+}
+
+
+
 module.exports = {
     blog_setup,
     blog_setup_save,
@@ -192,5 +225,7 @@ module.exports = {
     update_post,
     about,
     contact,
+    load_Settings,
+    save_Settings
 };
 

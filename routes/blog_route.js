@@ -15,4 +15,6 @@ blog_route.post('/add-comment', blog_controller.add_comment);
 
 blog_route.post('/do-reply', blog_controller.do_reply);
 
+blog_route.get('/get-posts/:start/:limit', blog_controller.get_posts);
+
 module.exports = blog_route;
